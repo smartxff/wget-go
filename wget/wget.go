@@ -36,6 +36,7 @@ type Wgetter struct {
 	// should be set explicitly to false when running from CLI. uggo will detect as best as possible
 	AlwaysPipeStdin   bool 
 	OutputFilename string
+	OutputFileMode os.FileMode
 	Timeout        int //TODO
 	Retries        int //TODO
 	IsVerbose      bool //todo
@@ -56,7 +57,6 @@ type Wgetter struct {
 
 const (
 	VERSION              = "0.5.0"
-	FILEMODE os.FileMode = 0660
 )
 
 //Factory for wgetter which outputs to Stdout
@@ -70,6 +70,7 @@ func WgetToOut(urls ...string) *Wgetter {
 func Wget(urls ...string) *Wgetter {
 	wgetter := new(Wgetter)
 	wgetter.links = urls
+	wgetter.OutputFileMode = 0755
 	if len(urls) == 0 {
 		wgetter.AlwaysPipeStdin = true
 	}
@@ -295,7 +296,7 @@ func wgetOne(link string, options *Wgetter, outPipe io.Writer, errPipe io.Writer
 		} else {
 			openFlags = os.O_WRONLY | os.O_CREATE | os.O_TRUNC
 		}
-		outFile, err = os.OpenFile(filename, openFlags, FILEMODE)
+		outFile, err = os.OpenFile(filename, openFlags, options.OutputFileMode)
 		if err != nil {
 			return err
 		}
